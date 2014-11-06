@@ -1,0 +1,6 @@
+<?import javafx.scene.layout.StackPane?>
+<?import com.yworks.yfiles.canvas.GraphControl?>
+<StackPane fx:controller="vertexcoloring.Controller" xmlns:fx="http://javafx.com/fxml">
+    <!-- Defines the GraphControl and assigns it to the property in its controller. -->
+    <GraphControl fx:id="graphControl"/>
+</StackPane>
