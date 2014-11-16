@@ -31,4 +31,28 @@ public class Printer {
         }
         System.out.println("]");
     }
+    public static void print(int[][] grid) {
+        for (int[] elements: grid) {
+            System.out.print("[");
+            for (int element : elements) {
+                if(element<0)
+                    System.out.print(element + ",");
+                else
+                    System.out.print(" " + element + ",");
+            }
+            System.out.println("]");
+        }
+    }
+    public static void print2(int[][] grid){
+        for (int x = 0; x < 4; x++) {
+            System.out.print("[");
+            for (int y = 0; y < 4; y++) {
+                if(grid[y][x]<0)
+                    System.out.print(grid[y][x] + ",");
+                else
+                    System.out.print(" " + grid[y][x] + ",");
+            }
+            System.out.println("]");
+        }
+    }
 }
