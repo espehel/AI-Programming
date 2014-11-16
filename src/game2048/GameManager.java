@@ -112,80 +112,9 @@ public class GameManager extends Group {
 
     public void quitGame() {
     }
-    public Map<Location,Tile> abstractMove(Direction direction, Map<Location, Tile> grid) {
-
-        return abstractMoveTiles(direction,deepCopyGrid(grid));
-    }
-
-    private Map<Location, Tile> abstractMoveTiles(Direction direction, Map<Location, Tile> grid) { //TODO: fucks up merging somehow
-
-        gridOperator.sortGrid(direction);
-        final int tilesWereMoved = gridOperator.traverseGrid((x, y) -> {
-            Location thisloc = new Location(x, y);
-            Location farthestLocation = findFarthestLocation(thisloc, direction); // farthest available location
-            Optional<Tile> opTile = optionalTile(thisloc,grid);
-
-            AtomicInteger result = new AtomicInteger();
-            Location nextLocation = farthestLocation.offset(direction); // calculates to a possible merge
-            optionalTile(nextLocation,grid).filter(t -> t.isMergeable(opTile) && !t.isMerged())
-                    .ifPresent(t -> {
-                        Tile tile = opTile.get();
-                        t.merge(tile);
-                        grid.put(nextLocation, t);
-                        grid.replace(thisloc, null);
-
-                        result.set(1);
-                    });
-            //if no merge and thisLoc has a value and it can slide further in the give direction
-            if (result.get() == 0 && opTile.isPresent() && !farthestLocation.equals(thisloc)) {
-                Tile tile = opTile.get();
-
-                grid.put(farthestLocation, tile);
-                grid.replace(thisloc, null);
-
-                tile.setLocation(farthestLocation);
-
-                result.set(1);
-            }
-
-            return result.get();
-        });
-
-            if ((!availableMove(grid) && mergeMovementsAvailable() == 0) || tilesWereMoved == 0 ) {
-                // game is over if there are no more moves available
-                return null;
-            }/* else if (randomAvailableLocation != null && tilesWereMoved > 0) {
-                Tile tile = Tile.newRandomTile();
-                tile.setLocation(randomAvailableLocation);
-                grid.put(tile.getLocation(), tile);
-            }*/
-
-            // reset merged after each movement
-            grid.values().stream().filter(Objects::nonNull).forEach(Tile::clearMerge);
-        return grid;
-    }
-
-    private Location findRandomAvailableLocation(Map<Location, Tile> grid) {
-        //finds all tiles without a value
-        List<Location> availableLocations = Location.getLocations().stream().filter(l -> grid.get(l) == null)
-                .collect(Collectors.toList());
-
-        if (availableLocations.isEmpty()) {
-            return null;
-        }
-
-        //shuffles list of locations and picks a random location from it
-        Collections.shuffle(availableLocations);
-        Location randomLocation = availableLocations.get(new Random().nextInt(availableLocations.size()));
-        return randomLocation;
-    }
-
-    private Optional<Tile> optionalTile(Location loc, Map<Location, Tile> grid) {
-        return Optional.ofNullable(grid.get(loc));
-    }
 
     public void move(Direction direction) {
-        counter++;
+        //counter++;
         if (!board.isLayerOn().get()) {
             moveTiles(direction);
         }
@@ -292,6 +221,9 @@ public class GameManager extends Group {
      */
     private Optional<Tile> optionalTile(Location loc) {
         return Optional.ofNullable(gameGrid.get(loc));
+    }
+    public boolean isMovingTiles(){
+        return movingTiles;
     }
 
     private Location findRandomAvailableLocation() {

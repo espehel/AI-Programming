@@ -119,9 +119,7 @@ public class Main extends Application {
             }
             //expectimax tries to finish the game
             if(keyCode.equals(KeyCode.R)){
-                /*counter++;
-                Event.fireEvent(scene,new KeyEvent(new EventType<>(""+counter),"s","",KeyCode.S,false,false,false,false));
-                */
+                //counter++;
                 runExpectimax();
             }
         });
@@ -130,30 +128,28 @@ public class Main extends Application {
     private void runExpectimax() {
         if(gameManager.isGameOver())
             return;
+
         //System.out.println(gameManager.counter + " == " + expectimax.counter);
-        //do{
-            Task task = new Task<Direction>(){
+
+            Task task = new Task<Void>(){
 
                 @Override
-                protected Direction call() throws Exception {
-                    Direction direction = null;
+                protected Void call() throws Exception {
                     try {
-
-                        //Thread.sleep(1000);
-                        direction = expectimax.getNextMove();
+                        //busy waiting
+                        while(gameManager.isMovingTiles());
+                        //Thread.sleep(20);
                     }catch(Exception e){
                         e.printStackTrace();
                     }
-                    return direction;
+                    return null;
                 }
             };
             task.setOnSucceeded(event -> {
-                gameManager.move((Direction) task.getValue());
+                gameManager.move(expectimax.getNextMove());
                 runExpectimax();
             });
             new Thread(task).start();
-            //Platform.runLater(() -> gameManager.move(direction));
-        //}while(!gameManager.isGameOver());
     }
 
     private void addSwipeHandlers(Scene scene) {

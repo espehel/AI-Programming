@@ -31,7 +31,7 @@ public class Game2048Expectimax {
     }
 
     public Direction getNextMove() {
-        counter++;
+        //counter++;
         double bestScore = Double.MIN_VALUE;
         Direction bestDirection = Direction.DOWN;
         int[][] grid = gridManager.toIntGrid(gameManager.getGameGrid());
