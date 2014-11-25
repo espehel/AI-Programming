@@ -81,10 +81,10 @@ public class GridWeights {
 
     public int[][][] values(){
         return new int[][][]{
-                //topRight,
-                //topLeft,
+                topRight,
+                topLeft,
                 bottomRight,
-                //bottomLeft
+                bottomLeft
         };
     }
 
