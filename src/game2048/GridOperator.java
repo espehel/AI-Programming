@@ -16,10 +16,6 @@ public class GridOperator {
     private final List<Integer> traversalX;
     private final List<Integer> traversalY;
 
-    public GridOperator(){
-        this(DEFAULT_GRID_SIZE);
-    }
-
     public GridOperator(int gridSize){
         this.gridSize=gridSize;
         this.traversalX = IntStream.range(0, gridSize).boxed().collect(Collectors.toList());

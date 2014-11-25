@@ -1,32 +1,32 @@
 package game2048;
 
-import sun.text.resources.cldr.ia.FormatData_ia;
 import tools.Printer;
-
-import java.util.Map;
 
 /**
  * Created by espen on 10/11/14.
  */
 public class Game2048Expectimax {
     public int counter = 0;
+    private boolean dynamicDepth;
     private int depth_limit;
     private final GameManager gameManager;
     private final GridWeights gridWeights;
-    private final GridManager gridManager;
+    private final GridSimulator gridSimulator;
 
     public Game2048Expectimax(int depthLimit, GameManager gameManager) {
         depth_limit = depthLimit;
         this.gameManager = gameManager;
         this.gridWeights = new GridWeights();
-        this.gridManager = new GridManager();
+        this.gridSimulator = new GridSimulator();
+        dynamicDepth = false;
     }
 
     public Game2048Expectimax() {
         gameManager = null;
         this.gridWeights = new GridWeights();
-        this.gridManager = new GridManager();
+        this.gridSimulator = new GridSimulator();
         depth_limit = 0;
+        dynamicDepth = false;
 
     }
 
@@ -34,12 +34,12 @@ public class Game2048Expectimax {
         //counter++;
         double bestScore = Double.MIN_VALUE;
         Direction bestDirection = Direction.DOWN;
-        int[][] grid = gridManager.toIntGrid(gameManager.getGameGrid());
-        /*if(gridManager.getEmptyTiles() < 8)
+        int[][] grid = gridSimulator.toIntGrid(gameManager.getGameGrid());
+        if(gridSimulator.getEmptyTiles() < 4 && dynamicDepth)
             depth_limit = 8;
         else
             depth_limit = 6;
-        */
+
         for (Direction direction: Direction.values()){
             /*Thread thread = new Thread();
             thread.start();
@@ -49,10 +49,10 @@ public class Game2048Expectimax {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }*/
-            int[][] newGrid = gridManager.copy(grid);
-            gridManager.shift(newGrid, direction);
+            int[][] newGrid = gridSimulator.copy(grid);
+            gridSimulator.shift(newGrid, direction);
 
-            if(gridManager.equals(newGrid,grid))
+            if(gridSimulator.equals(newGrid,grid))
                 continue;
 
             double score = getAverageScore(newGrid, 1);
@@ -73,7 +73,7 @@ public class Game2048Expectimax {
 
         if(depth >= depth_limit){
             //if there is an available move the heuristic will be calculated for bestMove, else bestMove will be returned with minimum score.
-            if(gridManager.availableMove(grid))
+            if(gridSimulator.availableMove(grid))
                 return getHeuristicScore(grid);
             return bestScore;
         }
@@ -82,10 +82,10 @@ public class Game2048Expectimax {
         for (Direction direction: Direction.values()){
             //does an move that produces a new grid, but does not change the GameManager object in any way.
             //Map<Location,Tile> newGrid = gameManager.abstractMove(direction, grid);
-            int[][] newGrid = gridManager.copy(grid);
-            gridManager.shift(newGrid, direction);
+            int[][] newGrid = gridSimulator.copy(grid);
+            gridSimulator.shift(newGrid, direction);
             //if the newGrid is equal to the original grid, now movement has been done, and this can be pruned
-            if(gridManager.equals(newGrid,grid))
+            if(gridSimulator.equals(newGrid,grid))
                 continue;
             double score = getAverageScore(newGrid, depth+1);
 
@@ -105,7 +105,7 @@ public class Game2048Expectimax {
             for (int y = 0; y < 4; y++) {
                 if (grid[y][x] == 0) {
                     //for 2
-                    int[][] newGrid2 = gridManager.copy(grid);
+                    int[][] newGrid2 = gridSimulator.copy(grid);
                     newGrid2[y][x] = 2;
                     double score2 = getBestMove(newGrid2,depth + 1);
                     //adds the score for this outcome
@@ -114,7 +114,7 @@ public class Game2048Expectimax {
                     totalOutcomeProbability += 0.9;//TODO possibly count for how many tiles there is available
 
                     //for 4
-                    int[][] newGrid4 = gridManager.copy(grid);
+                    int[][] newGrid4 = gridSimulator.copy(grid);
                     newGrid4[y][x] = 4;
                     double score4 = getBestMove(newGrid4,depth + 1);
                     //adds the score for this outcome
@@ -164,5 +164,8 @@ public class Game2048Expectimax {
         Printer.print(GridWeights.TR);
         System.out.println();
         game.getHeuristicScore(a);
+    }
+    public void setDynamicDepth(boolean dynamicDepth){
+        this.dynamicDepth = dynamicDepth;
     }
 }

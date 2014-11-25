@@ -15,9 +15,9 @@ public class GameManager extends Group {
 
     public static final int FINAL_VALUE_TO_WIN = 2048;
 
-    private static final Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
-    private static final Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
-    private static final Duration ANIMATION_MERGED_TILE = Duration.millis(80);
+    private static Duration ANIMATION_EXISTING_TILE = Duration.millis(65);
+    private static Duration ANIMATION_NEWLY_ADDED_TILE = Duration.millis(125);
+    private static Duration ANIMATION_MERGED_TILE = Duration.millis(80);
 
     private volatile boolean movingTiles = false;
     private final List<Location> locations = new ArrayList<>();
@@ -28,15 +28,11 @@ public class GameManager extends Group {
     private final Board board;
     private final GridOperator gridOperator;
 
+    private Interpolator animationIn;
+    private Interpolator animationOut;
+
     private boolean deadEnd;
     public int counter = 0;
-
-    public GameManager(Map<Location, Tile> gameGrid, Board board, GridOperator gridOperator) {
-        this.gameGrid = gameGrid;
-        this.board = board;
-        this.gridOperator = gridOperator;
-        deadEnd = false;
-    }
 
     public GameManager() {
         this(GridOperator.DEFAULT_GRID_SIZE);
@@ -62,6 +58,8 @@ public class GameManager extends Group {
 
         initializeGameGrid();
         Location.setLocations(locations);
+        animationIn = Interpolator.EASE_IN;
+        animationOut = Interpolator.EASE_OUT;
         startGame();
     }
     private void initializeGameGrid() {
@@ -261,33 +259,7 @@ public class GameManager extends Group {
     public boolean isGameOver(){
         return board.getGameOver();
     }
-    public boolean isDeadEnd(){
-        return deadEnd;
-    }
-    /*public GameManager getDeepCopy() {
-        Map<Location,Tile> newGameGrid = deepCopyGrid();
-        GameManager newManager = new GameManager(newGameGrid,this.board,this.gridOperator);
 
-
-
-
-        return null;
-    }*/
-
-    public static Map<Location, Tile> deepCopyGrid(Map<Location, Tile> grid) {
-        Map<Location,Tile> newGrid = new HashMap<>();
-        grid.forEach((loc,tile) -> {
-            Location newLoc = new Location(loc.getX(),loc.getY());
-            if(tile == null)
-                newGrid.put(newLoc,null);
-            else{
-                Tile newTile = Tile.newTile(tile.getValue());
-                newTile.setLocation(newLoc);
-                newGrid.put(newLoc, newTile);
-            }
-        });
-        return newGrid;
-    }
     public Map<Location, Tile> getGameGrid(){
         return gameGrid;
     }
@@ -316,7 +288,7 @@ public class GameManager extends Group {
         final ScaleTransition scaleTransition = new ScaleTransition(ANIMATION_NEWLY_ADDED_TILE, tile);
         scaleTransition.setToX(1.0);
         scaleTransition.setToY(1.0);
-        scaleTransition.setInterpolator(Interpolator.EASE_OUT);
+        scaleTransition.setInterpolator(animationOut);
         scaleTransition.setOnFinished(e -> {
             // after last movement on full grid, check if there are movements available
             if (this.gameGrid.values().parallelStream().noneMatch(Objects::isNull) && mergeMovementsAvailable() == 0 ) {
@@ -335,9 +307,9 @@ public class GameManager extends Group {
     private Timeline animateExistingTile(Tile tile, Location newLocation) {
         Timeline timeline = new Timeline();
         KeyValue kvX = new KeyValue(tile.layoutXProperty(),
-                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutX(Board.CELL_SIZE) - (tile.getMinHeight() / 2), animationOut);
         KeyValue kvY = new KeyValue(tile.layoutYProperty(),
-                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), Interpolator.EASE_OUT);
+                newLocation.getLayoutY(Board.CELL_SIZE) - (tile.getMinHeight() / 2), animationOut);
 
         KeyFrame kfX = new KeyFrame(ANIMATION_EXISTING_TILE, kvX);
         KeyFrame kfY = new KeyFrame(ANIMATION_EXISTING_TILE, kvY);
@@ -358,50 +330,29 @@ public class GameManager extends Group {
         final ScaleTransition scale0 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
         scale0.setToX(1.2);
         scale0.setToY(1.2);
-        scale0.setInterpolator(Interpolator.EASE_IN);
+        scale0.setInterpolator(animationIn);
 
         final ScaleTransition scale1 = new ScaleTransition(ANIMATION_MERGED_TILE, tile);
         scale1.setToX(1.0);
         scale1.setToY(1.0);
-        scale1.setInterpolator(Interpolator.EASE_OUT);
+        scale1.setInterpolator(animationOut);
 
         return new SequentialTransition(scale0, scale1);
     }
+    public void setAnimationIn(Interpolator animation){
+        animationIn = animation;
+    }
+
+    public void setAnimationOut(Interpolator animation){
+        animationOut = animation;
+    }
+    public void setNoAnimationTime(){
+        ANIMATION_EXISTING_TILE = Duration.millis(30);
+        ANIMATION_NEWLY_ADDED_TILE = Duration.millis(50);
+        ANIMATION_MERGED_TILE = Duration.millis(40);
+    }
 
     public static boolean availableMove(Map<Location, Tile> grid) {
-
         return !grid.values().stream().filter(tile -> tile != null).collect(Collectors.toList()).isEmpty();
-        /*for (Tile tile: grid.values()){
-            if(tile != null)
-                return true;
-        }
-        return false;*/
     }
-
-    public static List<GridOutcome> getAllOutcomes(Map<Location, Tile> grid) {
-        List<Location> availableLocations = Location.getLocations().stream().filter(l -> grid.get(l) == null)
-                .collect(Collectors.toList());
-        List<GridOutcome> outcomes = new ArrayList<>();
-
-        for (Location location: availableLocations){
-            outcomes.add(getGridWithNewTile(grid,location,2,0.9));
-            outcomes.add(getGridWithNewTile(grid,location,4,0.1));
-        }
-
-        return outcomes;
-    }
-
-    private static GridOutcome getGridWithNewTile(Map<Location, Tile> grid, Location location, int value, double probability) {
-        Map<Location,Tile> newGrid = deepCopyGrid(grid);
-        Tile tile = Tile.newTile(value);
-        Location newLoc = new Location(location.getX(),location.getY());
-        tile.setLocation(newLoc);
-        newGrid.put(newLoc,tile);
-        GridOutcome outcome = new GridOutcome();
-        outcome.setGrid(newGrid);
-        outcome.setProbability(probability);
-
-        return outcome;
-    }
-
 }

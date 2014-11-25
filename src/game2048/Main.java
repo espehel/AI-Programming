@@ -1,5 +1,6 @@
 package game2048;
 
+import javafx.animation.Interpolator;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -44,8 +45,12 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         gameManager = new GameManager();
+        gameManager.setAnimationIn(Interpolator.LINEAR);
+        gameManager.setAnimationOut(Interpolator.LINEAR);
+        gameManager.setNoAnimationTime();
         gameBounds = gameManager.getLayoutBounds();
         expectimax = new Game2048Expectimax(6,gameManager);
+        expectimax.setDynamicDepth(false);
 
         StackPane root = new StackPane(gameManager);
         root.getStyleClass().addAll("game-root");

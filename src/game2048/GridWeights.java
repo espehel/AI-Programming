@@ -15,12 +15,6 @@ public class GridWeights {
     private int[][] topLeft;
     private int[][] bottomRight;
     private int[][] bottomLeft;
-    public static final int[][] TR = new int[][]{
-            { 0, 1, 2, 3},
-            {-1, 0, 1, 2},
-            {-2,-1, 0, 1},
-            {-3,-2,-1, 0}
-    };
 
     public GridWeights() {
         generateGridWeights();
@@ -88,11 +82,4 @@ public class GridWeights {
         };
     }
 
-    public static void main(String[] args) {
-        GridWeights gridWeights = new GridWeights();
-        Printer.print(TR);
-        System.out.println();
-        Printer.print2(TR);
-
-    }
  }

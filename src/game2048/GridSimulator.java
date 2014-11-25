@@ -1,7 +1,6 @@
 package game2048;
 
 
-import sun.awt.image.BufImgVolatileSurfaceManager;
 import tools.Printer;
 
 import java.util.Map;
@@ -9,8 +8,9 @@ import java.util.Map;
 /**
  * Created by espen on 14/11/14.
  */
-public class GridManager {
+public class GridSimulator {
     private int _emptyTiles;
+
     public void shift(int[][] grid, Direction direction){
 
         //TODO: return true if nothing changed
@@ -114,9 +114,6 @@ public class GridManager {
                     target++;
                 }
             }
-
-
-
         }
     }
 
@@ -124,7 +121,7 @@ public class GridManager {
         int[][] a = new int[][]{{2,0,4,0},{0,2,2,0},{0,0,8,0},{0,2,0,0}};
         Printer.print(a);
         System.out.println();
-        GridManager mng = new GridManager();
+        GridSimulator mng = new GridSimulator();
 
         mng.shift(a, Direction.LEFT);
         Printer.print(a);
@@ -179,7 +176,8 @@ public class GridManager {
         }
         return true;
     }
-    public int getEmptyTiles(){
+
+    public int getEmptyTiles() {
         return _emptyTiles;
     }
 }
